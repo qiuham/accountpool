@@ -1,0 +1,42 @@
+# accountpool 运行配置
+#
+# Python 浏览器层和 Go HTTP 层共享代理配置。邮箱凭据通过环境变量配置。
+# Docker 内访问宿主机代理用 host.docker.internal，不能用容器自己的 127.0.0.1。
+
+# 代理只在管理台代理池配置并按账号绑定；应用没有全局默认代理。
+
+[browser]
+# 指纹声明的平台。注意目标站点若按账号地区下发语言，
+# 这里改不掉它 —— 文案差异靠别名表吸收。
+os = "windows"
+locale = "en-US"
+# 时间与 IP 由 geoip 按代理出口自动对齐
+geoip = true
+
+[engine]
+# 字体子集份数。每份摘掉不同的西文字族，让 canvas 在账号之间可区分。
+# 账号序号对这里取模决定用哪份。必须是 8 的约数或能被 8 整除才均匀。
+subset_count = 8
+# camoufox 版本渠道。camoufox 版本号永远带 beta，真信号是渠道标注：
+#   official/stable      —— 用这个
+#   official/prerelease  —— 未经验证，别用
+channel = "official/stable"
+
+[timing]
+# 等 CF 挑战放行。首页通常几秒，全新 profile 首轮可能更久。
+cf_timeout = 150
+# 等验证码邮件到达
+code_timeout = 180
+# 等一次回复流式输出结束
+reply_timeout = 180
+# 养号两轮之间的间隔
+warmup_gap = 12
+
+[identity]
+# 账号显示名，会出现在 Claude 的问候语里。用常见英文名，别带用途痕迹。
+display_name = "Alex"
+
+[paths]
+bundles = "bundles"
+artifacts = "artifacts"
+subsets = ".subsets"

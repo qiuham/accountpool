@@ -1,0 +1,48 @@
+x-common: &common
+  image: ${ACCOUNTPOOL_IMAGE:-accountpool:local}
+  build:
+    context: .
+    additional_contexts:
+      frontend: ../accountpool-web
+  init: true
+  restart: unless-stopped
+  env_file: ${ACCOUNTPOOL_ENV_FILE:-.env}
+  environment:
+    TZ: ${TZ:-Asia/Shanghai}
+    ACCOUNTPOOL_CONFIG: /app/config.toml
+  volumes:
+    - ${ACCOUNTPOOL_DATA_DIR:-./data}/backend:/app/backend
+    - ${ACCOUNTPOOL_DATA_DIR:-./data}/bundles:/app/bundles
+    - ${ACCOUNTPOOL_DATA_DIR:-./data}/artifacts:/app/artifacts
+    - ${ACCOUNTPOOL_CONFIG:-./config.toml}:/app/config.toml:ro
+    - ${ACCOUNTPOOL_DATA_DIR:-./data}/.subsets:/app/.subsets:ro
+  extra_hosts:
+    - host.docker.internal:host-gateway
+  stop_grace_period: 45s
+
+services:
+  api:
+    <<: *common
+    mem_limit: 512m
+    cpus: 0.5
+    pids_limit: 128
+    command: [serve, --addr, '0.0.0.0:8787']
+    ports:
+      - '127.0.0.1:${ACCOUNTPOOL_PORT:-8787}:8787'
+    healthcheck:
+      test: [CMD, /app/.venv-stable/bin/python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8787/healthz', timeout=3).close()"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+  maintenance:
+    <<: *common
+    profiles: [worker]
+    mem_limit: ${ACCOUNTPOOL_WORKER_MEMORY:-3g}
+    cpus: ${ACCOUNTPOOL_WORKER_CPUS:-1.5}
+    pids_limit: 512
+    shm_size: 512m
+    command: [maintain]
+    depends_on:
+      api:
+        condition: service_healthy
+

@@ -1,0 +1,15 @@
+**
+!Dockerfile
+!backend/
+!backend/**/
+!backend/**/*.go
+!backend/**/*.sql
+!backend/go.mod
+!backend/go.sum
+!executor/
+!executor/**/
+!executor/**/*.py
+!executor/requirements.txt
+!config.example.toml
+!deploy/
+!deploy/docker-entrypoint.sh

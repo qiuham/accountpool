@@ -1,0 +1,21 @@
+# Reuse this checkout's existing state and host-loopback proxy on Linux.
+# Run: docker compose -f deploy/compose.local-maintenance.yaml up -d
+services:
+  maintenance:
+    image: accountpool:local
+    init: true
+    restart: unless-stopped
+    network_mode: host
+    shm_size: 1gb
+    env_file: ../.env
+    environment:
+      ACCOUNTPOOL_REQUIRE_PROXY: "true"
+      TZ: ${TZ:-Asia/Shanghai}
+    volumes:
+      - ../backend:/app/backend
+      - ../bundles:/app/bundles
+      - ../artifacts:/app/artifacts
+      - ../.subsets:/app/.subsets
+      - ../config.toml:/app/config.toml:ro
+    command: [maintain]
+    stop_grace_period: 45s
